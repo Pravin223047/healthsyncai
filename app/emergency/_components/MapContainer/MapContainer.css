@@ -1,0 +1,73 @@
+.mapcontainer {
+  padding: 16px;
+  background-color: #000000;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mapheading {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.contactscontainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contacts {
+  background-color: rgb(48, 48, 48);
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.content {
+  margin-bottom: 8px;
+}
+
+.name {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.address {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.locationicon {
+  color: #007bff;
+}
+
+.call {
+  display: flex;
+  align-items: center;
+}
+
+.phone-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.getdirections {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.getdirections:hover {
+  background-color: #0056b3;
+}

@@ -1,0 +1,296 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id       String @id @default(uuid()) @map("_id")
+  userId   String @unique
+  name     String
+  imageUrl String
+  email    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  conversationIds String[]
+  conversations   Conversation[] @relation(fields: [conversationIds], references: [id])
+
+  seenMessageIds String[]
+  seenMessages   Message[] @relation("Seen", fields: [seenMessageIds], references: [id])
+
+  accounts Account[]
+  messages Message[]
+}
+
+model Account {
+  id                String  @id @default(uuid()) @map("_id")
+  profileId         String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Conversation {
+  id            String   @id @default(uuid()) @map("_id")
+  createdAt     DateTime @default(now())
+  lastMessageAt DateTime @default(now())
+  name          String?
+  isGroup       Boolean?
+
+  messagesIds String[]  @db.ObjectId
+  messages    Message[]
+
+  profileIds String[]
+  users      Profile[] @relation(fields: [profileIds], references: [id])
+}
+
+model Message {
+  id             String       @id @default(uuid()) @map("_id")
+  body           String?
+  image          String?
+  createdAt      DateTime     @default(now())
+  seenIds        String[]
+  seen           Profile[]    @relation("Seen", fields: [seenIds], references: [id])
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         Profile      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  reactions Json? // Optional JSON field for reactions
+}
+
+model Document {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  profileId   String
+  name        String
+  type        String
+  date        String
+  description String
+  url         String? // Assuming URL might be null if the file is not stored directly in the database
+}
+
+model Emergencycontact {
+  id      String @id @default(uuid()) @map("_id")
+  name    String
+  contact String
+}
+
+model Patient {
+  id               String  @id @default(auto()) @map("_id") @db.ObjectId
+  patientId        String  @db.ObjectId
+  name             String
+  email            String
+  phone            String
+  address          String
+  city             String
+  state            String
+  zip              String
+  age              Int
+  weight           Float
+  height           Float
+  bloodgroup       String
+  allergies        String
+  surgeries        String
+  medications      String
+  hospitilizations String
+  smoking          Boolean
+  alcohol          Boolean
+  exercise         Boolean
+  diet             Boolean
+  other            Boolean
+
+  appointments Appointment[]
+}
+
+model Doctor {
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  doctorId       String @db.ObjectId
+  name           String
+  email          String
+  phone          String
+  age            Int
+  workingaddress String
+  state          String
+  zipcode        String
+  specialization String
+  experience     String
+  gender         String
+
+  appointments Appointment[]
+}
+
+model Appointment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  date      DateTime
+  time      DateTime
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  doctorId  String   @db.ObjectId
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  patientId String   @db.ObjectId
+  status    String // E.g., Scheduled, Completed, Cancelled
+  problem   String? // Nullable field
+}
+
+// Community Database
+
+model CommunityProfile {
+  id       String @id @default(uuid()) @map("_id")
+  userId   String @unique
+  name     String
+  imageUrl String
+  email    String
+
+  servers  Server[]
+  members  Member[]
+  channels Channel[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Server {
+  id         String @id @default(uuid()) @map("_id")
+  name       String
+  imageUrl   String
+  inviteCode String @unique
+
+  profileId String
+  profile   CommunityProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  members  Member[]
+  channels Channel[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId])
+}
+
+enum MemberRole {
+  ADMIN
+  MODERATOR
+  GUEST
+}
+
+model Member {
+  id   String     @id @default(uuid()) @map("_id")
+  role MemberRole @default(GUEST)
+
+  profileId String
+  profile   CommunityProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  serverId String
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  messages       CommunityMessage[]
+  directMessages DirectMessage[]
+
+  conversationsInitiated CommunityConversation[] @relation("MemberOne")
+  conversationsReceived  CommunityConversation[] @relation("MemberTwo")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId])
+  @@index([serverId])
+}
+
+enum ChannelType {
+  TEXT
+  AUDIO
+  VIDEO
+}
+
+model Channel {
+  id   String      @id @default(uuid()) @map("_id")
+  name String
+  type ChannelType @default(TEXT)
+
+  profileId String
+  profile   CommunityProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  serverId String
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  messages CommunityMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId])
+  @@index([serverId])
+}
+
+model CommunityMessage {
+  id      String @id @default(uuid()) @map("_id")
+  content String
+
+  fileUrl String?
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  channelId String
+  channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  deleted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([channelId])
+  @@index([memberId])
+}
+
+model CommunityConversation {
+  id String @id @default(uuid()) @map("_id")
+
+  memberOneId String
+  memberOne   Member @relation("MemberOne", fields: [memberOneId], references: [id], onDelete: Cascade)
+
+  memberTwoId String
+  memberTwo   Member @relation("MemberTwo", fields: [memberTwoId], references: [id], onDelete: Cascade)
+
+  directMessages DirectMessage[]
+
+  @@unique([memberOneId, memberTwoId])
+  @@index([memberTwoId])
+}
+
+model DirectMessage {
+  id      String  @id @default(uuid()) @map("_id")
+  content String
+  fileUrl String?
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  conversationId String
+  conversation   CommunityConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  deleted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([memberId])
+  @@index([conversationId])
+}
