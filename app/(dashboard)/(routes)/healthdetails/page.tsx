@@ -6,11 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@mui/material";
 
-interface Profile {
-  name: string;
-  email: string;
-}
-
 interface FormData {
   name: string;
   email: string;
@@ -34,10 +29,10 @@ interface FormData {
   other: boolean;
 }
 
-const HealthDetails: React.FC<{ profile: Profile }> = ({ profile }) => {
+const HealthDetails = () => {
   const [formData, setFormData] = useState<FormData>({
-    name: profile?.name || "",
-    email: profile?.email || "",
+    name: "",
+    email: "",
     phone: "",
     address: "",
     city: "",

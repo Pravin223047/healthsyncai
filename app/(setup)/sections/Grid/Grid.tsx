@@ -148,8 +148,9 @@ const About = () => {
             <div className="mt-2 relative">
               <p className="grid-headtext">📞 Audio Call Feature:</p>
               <p className="grid-subtext">
-                If video isn't an option, you can still consult with doctors via
-                secure, high-quality audio calls, no matter where you are.
+                If video isn&apos;t an option, you can still consult with
+                doctors via secure, high-quality audio calls, no matter where
+                you are.
               </p>
             </div>
           </div>
